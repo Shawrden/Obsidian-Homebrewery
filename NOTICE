@@ -1,0 +1,39 @@
+THIRD-PARTY NOTICES AND LICENSES
+================================
+
+This plugin incorporates styling conventions and bundled font assets from the
+following third-party open-source projects:
+
+1. NaturalCrit Homebrewery V3 (`5ePHB`) Layout & CSS Conventions
+   Project: https://github.com/naturalcrit/homebrewery
+   License: MIT License
+
+   The two-column book spread styling, class progression frames, monster
+   statblock styling, callout boxes, spell list layouts, and page footer
+   conventions in `src/renderer.ts` are modeled after NaturalCrit's
+   Homebrewery V3 (`5ePHB`) theme under the MIT License.
+
+2. Cinzel Font
+   Copyright 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel)
+   Bundled via: @fontsource/cinzel
+   License: SIL Open Font License, Version 1.1 (http://scripts.sil.org/OFL)
+
+3. Libre Baskerville Font
+   Copyright 2012 The Libre Baskerville Project Authors (https://github.com/impallari/Libre-Baskerville)
+   Bundled via: @fontsource/libre-baskerville
+   License: SIL Open Font License, Version 1.1 (http://scripts.sil.org/OFL)
+
+4. Open Sans Font
+   Copyright 2020 The Open Sans Project Authors (https://github.com/googlefonts/opensans)
+   Bundled via: @fontsource/open-sans
+   License: SIL Open Font License, Version 1.1 (http://scripts.sil.org/OFL)
+
+5. Uncial Antiqua Font
+   Copyright (c) 2011 by Brian J. Bonislawsky DBA Astigmatic (AOETI) (astigma@astigmatic.com)
+   Bundled via: @fontsource/uncial-antiqua
+   License: SIL Open Font License, Version 1.1 (http://scripts.sil.org/OFL)
+
+6. Ephesis Font
+   Copyright 2004-2021 The Ephesis Project Authors (https://github.com/googlefonts/ephesis)
+   Bundled via: @fontsource/ephesis
+   License: SIL Open Font License, Version 1.1 (http://scripts.sil.org/OFL)
