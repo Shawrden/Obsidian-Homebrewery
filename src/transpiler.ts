@@ -419,13 +419,50 @@ function parseCommaModifiers(spec: string): ParsedImageModifiers | null {
 	return { classes, styles };
 }
 
+const WINDOWS_DRIVE_PATH = /^[a-zA-Z]:[\\/]/;
+const UNIX_ABS_PATH = /^\/(?!\/)/;
+const FILE_URI_PREFIX = /^file:\/\/\//i;
+
+/** Returns true when `rawPath` is an external local filesystem path (drive path, Unix absolute path, or `file:///` URI). */
+export function isExternalLocalPath(rawPath: string): boolean {
+	const trimmed = rawPath.trim();
+	return WINDOWS_DRIVE_PATH.test(trimmed) || UNIX_ABS_PATH.test(trimmed) || FILE_URI_PREFIX.test(trimmed);
+}
+
+/** Normalizes an external local filesystem path or `file:///` URI to Obsidian's `app://local/` protocol. */
+export function toAppLocalSrc(rawPath: string): string {
+	const trimmed = rawPath.trim();
+	const decoded = trimmed.replace(/%20/gi, " ");
+	const normalized = decoded.replace(/\\/g, "/").replace(FILE_URI_PREFIX, "");
+	const encoded = normalized.replace(/ /g, "%20");
+	return `app://local/${encoded}`;
+}
+
+function resolveTranspiledImageUrl(rawUrl: string, resolveImagePath?: TranspileOptions["resolveImagePath"]): string {
+	const trimmed = rawUrl.trim();
+	const isLocal = isExternalLocalPath(trimmed);
+	if (isExternalUrl(trimmed) && !isLocal) {
+		return trimmed;
+	}
+	const decoded = safeDecodeUri(trimmed);
+	const vaultResolved = resolveImagePath?.(decoded);
+	if (vaultResolved && vaultResolved !== decoded && !isExternalLocalPath(vaultResolved)) {
+		return encodeImageUrl(vaultResolved);
+	}
+	if (isLocal) {
+		return toAppLocalSrc(trimmed);
+	}
+	return encodeImageUrl(vaultResolved ?? decoded);
+}
+
 function formatV3Image(alt: string, url: string, attrs: string[], title?: string): string {
 	const t = title ? ` "${title}"` : "";
 	return `![${alt}](${url}${t})${attrs.length ? `{${attrs.join(",")}}` : ""}`;
 }
 
 function basenameNoExt(path: string): string {
-	const base = path.slice(path.lastIndexOf("/") + 1);
+	const sep = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
+	const base = path.slice(sep + 1);
 	const dot = base.lastIndexOf(".");
 	return dot > 0 ? base.slice(0, dot) : base;
 }
@@ -464,9 +501,9 @@ function convertEmbed(inner: string, opts: TranspileOptions): string {
 	const linkpath = target.split("#")[0].trim();
 	if (isImagePath(linkpath)) {
 		const { classes, styles, alt } = mergeImageModifiers(rest);
-		const resolved = isExternalUrl(linkpath) ? linkpath : (opts.resolveImagePath?.(linkpath) ?? linkpath);
+		const resolved = resolveTranspiledImageUrl(linkpath, opts.resolveImagePath);
 		const attrs = [...classes.map((c) => `.${c}`), ...styles];
-		return formatV3Image(alt || basenameNoExt(linkpath), encodeImageUrl(resolved), attrs);
+		return formatV3Image(alt || basenameNoExt(linkpath), resolved, attrs);
 	}
 	const alias = rest.join("|").trim();
 	return alias || wikilinkDisplayText(target);
@@ -507,11 +544,7 @@ function convertMarkdownImage(
 		}
 	}
 
-	let url = stripAngles(urlRaw);
-	if (!isExternalUrl(url)) {
-		const decoded = safeDecodeUri(url);
-		url = encodeImageUrl(opts.resolveImagePath?.(decoded) ?? decoded);
-	}
+	const url = resolveTranspiledImageUrl(stripAngles(urlRaw), opts.resolveImagePath);
 	return formatV3Image(alt, url, [...classAttrs, ...styles], title);
 }
 
@@ -1043,12 +1076,15 @@ function attachTokenLineSpans(tokens: Token[], processed: MappedLine[], src: str
 
 /** Resolves every `<img src>` in rendered HTML through the supplied resolver. */
 function resolveImagesInHtml(html: string, resolve?: RenderOptions["resolveImageSrc"]): string {
-	if (!resolve) return html;
 	return html.replace(/(<img\b[^>]*?\bsrc=)(["'])(.*?)\2/gi, (m, pre: string, q: string, src: string) => {
 		const raw = decodeHtmlEntities(src);
 		if (raw.startsWith("data:")) return m;
-		const resolved = resolve(raw);
-		return resolved ? `${pre}${q}${escapeHtml(resolved)}${q}` : m;
+		const resolved = resolve?.(raw);
+		if (resolved) return `${pre}${q}${escapeHtml(resolved)}${q}`;
+		if (isExternalLocalPath(raw)) {
+			return `${pre}${q}${escapeHtml(toAppLocalSrc(raw))}${q}`;
+		}
+		return m;
 	});
 }
 

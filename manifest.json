@@ -1,7 +1,7 @@
 {
   "id": "obsidian-homebrewery-exporter",
   "name": "Homebrew Exporter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minAppVersion": "1.5.0",
   "description": "Live TTRPG book-style two-column preview of your notes, with vector PDF and Homebrewery V3 Markdown export.",
   "author": "Shawrden",

@@ -204,6 +204,11 @@ Every block supports both single-line (`{{tag content}}`) and multi-line (`{{tag
 
 Both Obsidian embeds (`![[image.png|modifiers]]`) and standard Markdown images (`![alt|modifiers](image.png)`) are supported. You can combine multiple modifiers with commas (e.g., `![[art.png|col,fade-25,pos-top]]`).
 
+**Supported image paths:**
+- **Vault-relative filenames & paths** (`![[art.png|bg]]` or `![alt|bg](folder/art.png)`) — resolved inside the vault; **vault-stored images are recommended** for cross-device portability.
+- **`https://` URLs** — referenced directly as external web images.
+- **Desktop absolute paths** (`D:\...`, `/...`, or `file:///...`) — automatically rewritten to Obsidian's desktop `app://local/...` protocol when outside the vault (local desktop only; not portable across devices).
+
 #### Placement & Sizing Modifiers
 
 | Modifier | Behavior |

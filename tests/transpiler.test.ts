@@ -948,4 +948,27 @@ describe("Pass 2 features", () => {
 		expect(pages[0]).toContain('style="object-position:center left"');
 		expect(pages[0]).toContain('style="object-position:30% 20%"');
 	});
+
+	test("resolves external local file paths (Windows drive, Unix absolute, and file:///) to app://local/ URLs", () => {
+		const winMd = "![alt|bg](D:\\Games\\Wallpapers\\Test%20Image.jpg)";
+		const { v3: winV3, pages: winPages } = transpileToBook(winMd, {
+			resolveImagePath: () => null,
+		});
+
+		expect(winV3.trim()).toBe("![alt](app://local/D:/Games/Wallpapers/Test%20Image.jpg){.hb-img-bg}");
+		expect(winPages).toHaveLength(1);
+		expect(winPages[0]).toContain('src="app://local/D:/Games/Wallpapers/Test%20Image.jpg"');
+		expect(winPages[0]).toMatch(/class="[^"]*\bbg\b[^"]*"/);
+
+		const extraMd = [
+			"![uri|bg](file:///D:/Games/Wallpapers/Test%20Image.jpg)",
+			"",
+			"![unix|col](/Users/alice/Pictures/Test%20Image.png)",
+		].join("\n");
+		const { pages: extraPages } = transpileToBook(extraMd, {
+			resolveImagePath: () => null,
+		});
+		expect(extraPages[0]).toContain('src="app://local/D:/Games/Wallpapers/Test%20Image.jpg"');
+		expect(extraPages[0]).toContain('src="app://local//Users/alice/Pictures/Test%20Image.png"');
+	});
 });

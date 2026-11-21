@@ -1,6 +1,6 @@
 {
   "name": "obsidian-homebrewery-exporter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Live D&D 5e book-style preview of Obsidian notes with vector PDF and Homebrewery V3 Markdown export.",
   "main": "main.js",
   "scripts": {
